@@ -52,10 +52,18 @@ export default defineConfig({
       dependencies: ['setup']
     },
     {
+      name: 'e2e-firefox',
+      testMatch: 'tests/*.spec.ts',
+      dependencies: ['setup'],
+      use: {
+        browserName: 'firefox'
+      }
+    },
+    {
       name: 'api',
       testMatch: '*/api/*.spec.ts',
       dependencies: ['setup']
-    }
+    },
 
     // {
     //   name: 'firefox',

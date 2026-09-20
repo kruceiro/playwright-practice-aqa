@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 
-const authFile = path.resolve(__dirname, '../../../playwright/.auth/user.json');
+const authFile = path.resolve(__dirname, '../../playwright/.auth/user.json');
 
 test.use({ storageState: authFile, });
 
