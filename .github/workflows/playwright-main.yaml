@@ -1,0 +1,76 @@
+name: Playwright Tests Docker
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Playwright project'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - e2e
+          - e2e-firefox
+
+      exclude_known_failures:
+        description: 'Exclude known failing tests'
+        required: true
+        default: false
+        type: boolean
+
+  push:
+    branches: [ main, master ]
+
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+
+    env:
+      HOME: /root
+      BASE_URL: ${{ secrets.BASE_URL }}
+      HTTP_USERNAME: ${{ secrets.HTTP_USERNAME }}
+      HTTP_PASSWORD: ${{ secrets.HTTP_PASSWORD }}
+      USER_EMAIL: ${{ secrets.USER_EMAIL }}
+      USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Playwright tests
+        shell: bash
+        run: |
+          CMD="npx playwright test"
+
+          PROJECT="${{ inputs.project || 'all' }}"
+          EXCLUDE="${{ inputs.exclude_known_failures || 'false' }}"
+
+          if [ "$PROJECT" = "e2e" ]; then
+            CMD="$CMD --project=e2e"
+          elif [ "$PROJECT" = "e2e-firefox" ]; then
+            CMD="$CMD --project=e2e-firefox"
+          fi
+
+          if [ "$EXCLUDE" = "true" ]; then
+            CMD="$CMD --grep-invert 'TC002|TC007|TC012|TC021'"
+          fi
+
+          echo "Running: $CMD"
+          eval "$CMD"
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
