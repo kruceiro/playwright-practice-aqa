@@ -16,7 +16,7 @@ on:
       exclude_known_failures:
         description: 'Exclude known failing tests'
         required: true
-        default: true
+        default: false
         type: boolean
 
   push:
@@ -53,7 +53,7 @@ jobs:
           CMD="npx playwright test"
 
           PROJECT="${{ inputs.project || 'all' }}"
-          EXCLUDE="${{ inputs.exclude_known_failures || 'true' }}"
+          EXCLUDE="${{ inputs.exclude_known_failures || 'false' }}"
 
           if [ "$PROJECT" = "e2e" ]; then
             CMD="$CMD --project=e2e"
