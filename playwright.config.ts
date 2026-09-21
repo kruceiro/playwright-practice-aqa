@@ -44,15 +44,18 @@ export default defineConfig({
   projects: [
     {
       name: 'setup',
-      testMatch: /.*\.setup\.ts/,
+      testMatch: '*/setup/*.setup.ts'
     },
     {
       name: 'e2e',
-      use: {
-        ...devices['Desktop Chrome'],
-      },
-      dependencies: ['setup'],
+      testMatch: 'tests/*.spec.ts',
+      dependencies: ['setup']
     },
+    {
+      name: 'api',
+      testMatch: '*/api/*.spec.ts',
+      dependencies: ['setup']
+    }
 
     // {
     //   name: 'firefox',
