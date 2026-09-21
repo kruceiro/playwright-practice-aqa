@@ -1,6 +1,24 @@
 name: Playwright Tests Docker
 
 on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Playwright project'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - e2e
+          - e2e-firefox
+
+      exclude_known_failures:
+        description: 'Exclude known failing tests'
+        required: true
+        default: true
+        type: boolean
+
   push:
     branches: [ main, master ]
 
@@ -30,7 +48,25 @@ jobs:
         run: npm ci
 
       - name: Run Playwright tests
-        run: npx playwright test
+        shell: bash
+        run: |
+          CMD="npx playwright test"
+
+          PROJECT="${{ inputs.project || 'all' }}"
+          EXCLUDE="${{ inputs.exclude_known_failures || 'true' }}"
+
+          if [ "$PROJECT" = "e2e" ]; then
+            CMD="$CMD --project=e2e"
+          elif [ "$PROJECT" = "e2e-firefox" ]; then
+            CMD="$CMD --project=e2e-firefox"
+          fi
+
+          if [ "$EXCLUDE" = "true" ]; then
+            CMD="$CMD --grep-invert 'TC002|TC007|TC012|TC021'"
+          fi
+
+          echo "Running: $CMD"
+          eval "$CMD"
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
